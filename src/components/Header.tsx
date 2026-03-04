@@ -41,18 +41,13 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <div className="header">
-      <div className="header-left">
+      <div className="text-area">
         <span className="progress-icon" title={progress.status}>
           {getProgressIcon()}
-          {getProgressText() && (
-            <span className="progress-badge">{getProgressText()}</span>
-          )}
         </span>
+        <span className="title-text">{title}</span>
       </div>
-      <div className="header-center">
-        <h1 className="title">{title}</h1>
-      </div>
-      <div className="header-right">
+      <div className="action-area">
         <button 
           className="icon-btn maximize-btn" 
           onClick={onMaximize}

@@ -8,7 +8,9 @@
   height: 36px;
   width: 100%;
   box-sizing: border-box;
-  position: relative;
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
   
   &.footer-focused {
     position: fixed;
@@ -71,10 +73,6 @@
     opacity: 0.9;
   }
   
-  &:disabled {
-    background: linear-gradient(90deg, rgba(200, 200, 200, 1) 0%, rgba(220, 200, 220, 1) 100%);
-    cursor: not-allowed;
-  }
 }
 
 .send-icon {

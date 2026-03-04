@@ -17,16 +17,13 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 900px;
   height: 100vh;
-  max-height: 800px;
-  margin: 20px auto;
   padding: 12px;
   background-color: #ffffff;
-  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   box-sizing: border-box;
+  position: relative;
 }
 
 .app-container.maximized {
@@ -37,6 +34,19 @@ body {
   border-radius: 0;
 }
 
-.app-container > *:not(:last-child) {
+.header-wrapper,
+.content-wrapper,
+.footer-wrapper {
   margin-bottom: 8px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.content-wrapper {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }

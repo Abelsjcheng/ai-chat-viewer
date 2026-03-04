@@ -135,24 +135,29 @@ function App() {
 
   return (
     <div 
-      className={`app-container ${chatState.isMaximized ? 'maximized' : ''}`} 
-      ref={contentRef as React.RefObject<HTMLDivElement>}
+      className={`app-container ${chatState.isMaximized ? 'maximized' : ''}`}
     >
-      <Header
-        title={chatState.title}
-        progress={chatState.progress}
-        isMaximized={chatState.isMaximized}
-        onMaximize={handleMaximize}
-        onClose={handleClose}
-      />
-      <Content 
-        messages={chatState.messages} 
-        onSend={handleSendMessage} 
-      />
-      <Footer 
-        onSend={handleSendMessage} 
-        disabled={chatState.isLoading} 
-      />
+      <div className="header-wrapper">
+        <Header
+          title={chatState.title}
+          progress={chatState.progress}
+          isMaximized={chatState.isMaximized}
+          onMaximize={handleMaximize}
+          onClose={handleClose}
+        />
+      </div>
+      <div className="content-wrapper" ref={contentRef}>
+        <Content 
+          messages={chatState.messages} 
+          onSend={handleSendMessage} 
+        />
+      </div>
+      <div className="footer-wrapper">
+        <Footer 
+          onSend={handleSendMessage} 
+          disabled={chatState.isLoading} 
+        />
+      </div>
     </div>
   );
 }
