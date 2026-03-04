@@ -1,11 +1,12 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.[contenthash].js',
+    filename: 'js/bundle.[contenthash].js',
     clean: true,
   },
   resolve: {
@@ -35,11 +36,28 @@ module.exports = {
         test: /\.less$/,
         use: ['style-loader', 'css-loader', 'less-loader'],
       },
+      {
+        test: /\.(png|jpe?g|gif|svg|ico|woff|woff2|ttf|eot)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'assets/[name].[hash][ext]',
+        },
+      },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
+      filename: 'html/index.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: '.wecode/plugin.json',
+          to: 'plugin.json',
+          noErrorOnMissing: true,
+        },
+      ],
     }),
   ],
   devServer: {
