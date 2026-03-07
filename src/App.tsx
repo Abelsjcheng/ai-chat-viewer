@@ -1,161 +1,104 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import Header from './components/Header';
 import Content from './components/Content';
 import Footer from './components/Footer';
-import { ChatMessage, ChatState, AIProgressStatus } from './types';
+import { useSession } from './hooks/useSession';
+import { sendMessageToIM } from './services/jsapi';
+import type { AIProgressStatus } from './types';
 import './styles/App.less';
-
-const initialMessages: ChatMessage[] = [
-  {
-    id: '1',
-    role: 'assistant',
-    content: '您好！我是 AI 助手，请问有什么可以帮您的吗？',
-    timestamp: Date.now(),
-  },
-];
-
-const initialProgress: AIProgressStatus = {
-  status: 'idle',
-  step: 0,
-  totalSteps: 0,
-};
 
 const initialTitle = 'AI 智能问答';
 
 function App() {
-  const [chatState, setChatState] = useState<ChatState>({
-    title: initialTitle,
-    messages: initialMessages,
-    progress: initialProgress,
-    isLoading: false,
-    isMaximized: false,
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [title, setTitle] = useState(initialTitle);
+  const [progress, setProgress] = useState<AIProgressStatus>({
+    status: 'idle',
+    step: 0,
+    totalSteps: 0,
   });
 
-  const contentRef = useRef<HTMLDivElement>(null);
+  const {
+    sessionId,
+    messages,
+    isLoading,
+    isStreaming,
+    streamingContent,
+    sendMessage,
+    stopStreaming,
+  } = useSession({ autoConnect: true });
 
-  useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.scrollTop = contentRef.current.scrollHeight;
-    }
-  }, [chatState.messages]);
-
-  const handleSendMessage = useCallback((content: string) => {
-    const userMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      role: 'user',
-      content,
-      timestamp: Date.now(),
-    };
-
-    setChatState((prev) => ({
-      ...prev,
-      messages: [...prev.messages, userMessage],
-      isLoading: true,
-      progress: {
+  const handleSendMessage = useCallback(
+    async (content: string) => {
+      setTitle(content.substring(0, 50) + (content.length > 50 ? '...' : ''));
+      setProgress({
         status: 'thinking',
         step: 0,
         totalSteps: 3,
-      },
-      title: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-    }));
+      });
+      await sendMessage(content);
+    },
+    [sendMessage]
+  );
 
-    setTimeout(() => {
-      setChatState((prev) => ({
-        ...prev,
-        progress: {
-          status: 'processing',
-          step: 1,
-          totalSteps: 3,
-        },
-      }));
-    }, 1000);
+  const handleStopStreaming = useCallback(async () => {
+    await stopStreaming();
+    setProgress({
+      status: 'completed',
+      step: 3,
+      totalSteps: 3,
+    });
+  }, [stopStreaming]);
 
-    setTimeout(() => {
-      setChatState((prev) => ({
-        ...prev,
-        progress: {
-          status: 'processing',
-          step: 2,
-          totalSteps: 3,
-        },
-      }));
-    }, 2000);
+  const handleSendToIM = useCallback(async (content: string) => {
+    if (!sessionId) return;
 
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: `msg-${Date.now()}-ai`,
-        role: 'assistant',
-        content: `感谢您的问题：**${content}**\n\n这是一个示例回复，实际使用时您可以接入真实的 AI 后端服务。\n\n## 功能特点\n\n1. **Markdown 渲染**: 支持各种 Markdown 格式\n2. **实时状态**: 显示 AI 执行进展\n3. **交互友好**: 简洁的界面设计\n\n\`\`\`javascript\nconsole.log('Hello World');\n\`\`\`\n\n> 如有任何问题，请随时提问！`,
-        timestamp: Date.now(),
-      };
-
-      setChatState((prev) => ({
-        ...prev,
-        messages: [...prev.messages, aiResponse],
-        isLoading: false,
-        progress: {
-          status: 'completed',
-          step: 3,
-          totalSteps: 3,
-        },
-      }));
-
-      setTimeout(() => {
-        setChatState((prev) => ({
-          ...prev,
-          progress: {
-            status: 'idle',
-            step: 0,
-            totalSteps: 0,
-          },
-        }));
-      }, 2000);
-    }, 3000);
-  }, []);
+    try {
+      await sendMessageToIM({ sessionId, content });
+    } catch (error) {
+      console.error('发送到 IM 失败:', error);
+    }
+  }, [sessionId]);
 
   const handleMaximize = useCallback(() => {
-    setChatState((prev) => ({
-      ...prev,
-      isMaximized: !prev.isMaximized,
-    }));
+    setIsMaximized((prev) => !prev);
   }, []);
 
   const handleClose = useCallback(() => {
     const confirmClose = window.confirm('确认要关闭当前问答吗？');
     if (confirmClose) {
-      setChatState({
-        title: initialTitle,
-        messages: initialMessages,
-        progress: initialProgress,
-        isLoading: false,
-        isMaximized: false,
-      });
+      setTitle(initialTitle);
+      setIsMaximized(false);
     }
   }, []);
 
   return (
-    <div 
-      className={`app-container ${chatState.isMaximized ? 'maximized' : ''}`}
-    >
+    <div className={`app-container ${isMaximized ? 'maximized' : ''}`}>
       <div className="header-wrapper">
         <Header
-          title={chatState.title}
-          progress={chatState.progress}
-          isMaximized={chatState.isMaximized}
+          title={title}
+          progress={progress}
+          sessionId={sessionId}
+          isMaximized={isMaximized}
           onMaximize={handleMaximize}
           onClose={handleClose}
         />
       </div>
-      <div className="content-wrapper" ref={contentRef}>
-        <Content 
-          messages={chatState.messages} 
-          onSend={handleSendMessage} 
+      <div className="content-wrapper">
+        <Content
+          messages={messages}
+          onSend={handleSendMessage}
+          onSendToIM={handleSendToIM}
+          streamingContent={streamingContent}
+          isStreaming={isStreaming}
         />
       </div>
       <div className="footer-wrapper">
-        <Footer 
-          onSend={handleSendMessage} 
-          disabled={chatState.isLoading} 
+        <Footer
+          onSend={handleSendMessage}
+          onStop={handleStopStreaming}
+          isStreaming={isStreaming}
+          disabled={isLoading}
         />
       </div>
     </div>

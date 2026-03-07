@@ -1,21 +1,24 @@
 import React from 'react';
 import { AIProgressStatus } from '../types';
+import { controlSkillWeCode } from '../services/jsapi';
 import '../styles/Header.less';
 
 interface HeaderProps {
   title: string;
   progress: AIProgressStatus;
+  sessionId: string | null;
   isMaximized: boolean;
   onMaximize: () => void;
   onClose: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  title, 
-  progress, 
-  isMaximized, 
-  onMaximize, 
-  onClose 
+const Header: React.FC<HeaderProps> = ({
+  title,
+  progress,
+  sessionId,
+  isMaximized,
+  onMaximize,
+  onClose,
 }) => {
   const getProgressIcon = () => {
     switch (progress.status) {
@@ -32,11 +35,26 @@ const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const getProgressText = () => {
-    if (progress.status === 'processing') {
-      return `${progress.step}/${progress.totalSteps}`;
+  const handleMinimize = async () => {
+    if (sessionId) {
+      try {
+        await controlSkillWeCode({ action: 'minimize' });
+      } catch (error) {
+        console.error('最小化小程序失败:', error);
+      }
     }
-    return '';
+    onMaximize();
+  };
+
+  const handleClose = async () => {
+    if (sessionId) {
+      try {
+        await controlSkillWeCode({ action: 'close' });
+      } catch (error) {
+        console.error('关闭小程序失败:', error);
+      }
+    }
+    onClose();
   };
 
   return (
@@ -48,16 +66,16 @@ const Header: React.FC<HeaderProps> = ({
         <span className="title-text">{title}</span>
       </div>
       <div className="action-area">
-        <button 
-          className="icon-btn maximize-btn" 
-          onClick={onMaximize}
+        <button
+          className="icon-btn maximize-btn"
+          onClick={handleMinimize}
           title={isMaximized ? '缩小' : '放大'}
         >
           {isMaximized ? '🗗' : '🗖'}
         </button>
-        <button 
-          className="icon-btn close-btn" 
-          onClick={onClose}
+        <button
+          className="icon-btn close-btn"
+          onClick={handleClose}
           title="关闭"
         >
           ✕

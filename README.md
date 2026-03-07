@@ -1,41 +1,27 @@
-# AI Chat Viewer
+# AI Chat Viewer (小程序版本)
 
-AI 问答展示前端项目，使用 React 18.3 + TypeScript 开发。
+基于 JSAPI 的小程序 AI 问答展示项目，使用 React 18.3 + TypeScript 开发。
 
 ## 功能特点
 
-- 📦 **React 18.3 + TypeScript**: 现代化技术栈
-- 🌐 **兼容低版本浏览器**: 支持 IE11+
-- 📝 **Markdown 渲染**: 完整支持 Markdown 格式
-- 💬 **问答交互**: 实时展示 AI 问答过程和结果
-- 📊 **状态显示**: AI 执行进展图标
+- 🔗 **JSAPI 集成**: 完整实现 Skill SDK JSAPI 接口
+- 📝 **Markdown 渲染**: 基于 marked + shiki 的代码高亮
+- 💬 **流式输出**: 实时接收并渲染 AI 响应流
+- 📊 **会话管理**: 自动获取历史消息和会话监听
 - 🎨 **简洁界面**: 标题区、内容区、操作区三部分布局
 
-## 项目结构
+## JSAPI 接口实现
 
-```
-ai-chat-viewer/
-├── public/
-│   └── index.html
-├── src/
-│   ├── components/
-│   │   ├── Header.tsx      # 标题区组件
-│   │   ├── Header.css
-│   │   ├── Content.tsx     # 内容区组件
-│   │   ├── Content.css
-│   │   ├── Input.tsx       # 操作区组件
-│   │   └── Input.css
-│   ├── types/
-│   │   └── index.ts        # TypeScript 类型定义
-│   ├── App.tsx             # 主应用组件
-│   ├── App.css
-│   ├── index.tsx           # 入口文件
-│   └── index.css
-├── webpack.config.js       # Webpack 配置
-├── tsconfig.json           # TypeScript 配置
-├── .babelrc                # Babel 配置
-└── package.json
-```
+### 已实现接口
+
+| 接口 | 说明 |
+|------|------|
+| getSessionMessage | 获取会话历史消息 |
+| registerSessionListener | 注册会话监听器 |
+| sendMessage | 发送消息触发 AI 回答 |
+| stopSkill | 停止技能生成 |
+| sendMessageToIM | 发送 AI 结果到 IM |
+| controlSkillWeCode | 控制小程序（关闭/最小化） |
 
 ## 快速开始
 
@@ -51,49 +37,20 @@ npm install
 npm run dev
 ```
 
-自动在浏览器中打开 http://localhost:3000
+访问：`http://localhost:3000?sessionid=your-session-id`
 
-### 生产构建
+## URL 参数
 
-```bash
-npm run build
-```
+| 参数 | 说明 |
+|------|------|
+| sessionid | 会话 ID（必填） |
+| sessionId | 会话 ID（兼容） |
 
-构建文件输出到 `dist` 目录
+## 使用流程
 
-### 代码检查
-
-```bash
-npm run lint
-```
-
-## 页面布局
-
-### 标题区
-- 左侧：AI 执行进展图标（💬空闲 / 🤔思考 / ⚙️处理中 / ✅完成 / ❌错误）
-- 中间：当前问答标题（靠左对齐）
-- 右侧：放大/缩小按钮、关闭按钮
-
-### 内容区
-- 渲染 AI 返回的 Markdown 文档
-- 支持代码块、表格、列表等格式
-- 自动滚动到最新消息
-
-### 操作区
-- 输入框（支持 Enter 发送，Shift+Enter 换行）
-- 发送按钮
-
-## 浏览器兼容性
-
-配置了 `browserslist` 支持：
-- IE 11+
-- 最近 2 个版本的主流浏览器
-- 全球使用率 >0.5% 的浏览器
-
-## 技术栈
-
-- React: 18.3.1
-- TypeScript: 5.4+
-- Webpack: 5.90+
-- react-markdown: 9.0+
-- Babel: 7.24+（含 IE11 兼容配置）
+1. **打开小程序**: URL 携带 sessionid 参数
+2. **查看历史**: 自动调用 getSessionMessage 获取历史消息
+3. **发送消息**: 点击"生成"调用 sendMessage，监听流式响应
+4. **停止生成**: 点击"停止"调用 stopSkill
+5. **发送到 IM**: 点击 AI 消息的"发送"调用 sendMessageToIM
+6. **控制小程序**: 点击放大/缩小或关闭按钮调用 controlSkillWeCode

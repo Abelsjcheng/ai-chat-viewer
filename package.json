@@ -17,10 +17,13 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "marked": "^17.0.4",
+    "marked-shiki": "^1.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",
-    "remark-gfm": "^4.0.0"
+    "remark-gfm": "^4.0.0",
+    "shiki": "^4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
